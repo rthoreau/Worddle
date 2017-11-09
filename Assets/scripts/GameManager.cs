@@ -108,29 +108,37 @@ public class GameManager : MonoBehaviour {
 	private List<string> dictionary = new List<string>();
 	private List<string> combinationDictionary = new List<string>();
 
+	private string internalDictionaryPath = "Assets\\datas\\dictionary.txt";
+	private string internalDictionaryMetaPath = "Assets\\datas\\dictionary.txt.meta";
+
 	public List<string> alpha = new List<string>();
 	for (char c = 'A'; c <= 'Z'; c++){
-    	alpha.Add("" + c);
+		alpha.Add("" + c);
 	}
 
 	// Use this for initialization
 	void Start () {
 		
+		//Init interface elements
 		buttons = new Button[]{b1, b2, b3, b4, b5, b6};
-
+		word.text = "";
+		//Fil buttons with letters
 		fillLetters ();
 
-		if (forceGeneration) {
+		//Generate dictionnary file
+		if (forceGeneration || !File.Exists(externalDictionaryFileName)) {
 			generateDictionary ();
 		}
 
+		//Get dictionnary from file
 		setDictionary ();
-		word.text = "";
 
-		getPossibleCombination ();
-		//Keep only distinct combination and sort DESC
+		//order each combination, keep distinct, order all combination
+		combinationdictionary = String.Concat(dictionary.OrderBy(c => c));
 		combinationdictionary = combinationdictionary.Distinct().ToList();
 		List.sort(combinationdictionary);
+
+		//getPossibleCombination ();
 	}
 	
 	// Update is called once per frame
@@ -158,6 +166,7 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	//Action on LetterButton - Add letter in currentWord, and disable button
 	public void useLetter(Button action){
 		int i = 0;
 		int index = - 1;
@@ -176,6 +185,7 @@ public class GameManager : MonoBehaviour {
 
 	}
 
+	//Action on DeleteLetter
 	public void deleteLastLetter(){
 		if (currentWord.Length > 0) {
 			currentWord = currentWord.Substring (0, currentWord.Length - 1);
@@ -290,7 +300,7 @@ public class GameManager : MonoBehaviour {
 
 			line = line.Replace ("-", "");
 			line = line.Replace (".", "");
-			line = line.Replace ("Œ", "OE");
+			line = line.Replace ("Œ", "OE"); // marche pas ?
 			line = line.Replace (" ", "");
 
 
@@ -306,11 +316,11 @@ public class GameManager : MonoBehaviour {
 		Debug.Log (tempDictionary.Count);
 		reader.Close();
 
-		File.Delete("Assets\\datas\\dictionary.txt");
-		File.Delete("Assets\\datas\\dictionary.txt.meta");
+		File.Delete(internalDictionaryPath);
+		File.Delete(internalDictionaryMetaPath);
 
 		TextWriter writer;
-		string newFileName = "Assets\\datas\\dictionary.txt";
+		string newFileName = internalDictionaryPath;
 		writer = new StreamWriter(newFileName);
 		for (int i = 0; i < tempDictionary.Count; i++) {
 			if (i > 0) {
@@ -324,8 +334,8 @@ public class GameManager : MonoBehaviour {
 
 	public void setDictionary(){
 		TextReader reader;
-		if (File.Exists ("Assets\\datas\\dictionary.txt")) {
-			reader = new  StreamReader ("Assets\\datas\\dictionary.txt");
+		if (File.Exists (internalDictionaryPath)) {
+			reader = new  StreamReader (internalDictionaryPath);
 			string line;
 			while (true) {
 
@@ -391,19 +401,25 @@ public class GameManager : MonoBehaviour {
 		OPTIM
 		String.Concat(str.OrderBy(c => c))
 	*/
-	public void getPossibleCombination(){
-		foreach (var word in dictionary){
+	public void checkCombination(List<string> combinationLetters){
+		//pour chaque mot
+		/*foreach (var word in dictionary){
 			
 			Debug.Log (word);
 			var newCombination = "";
 			var wordCombination = word;
 
+			// pour chaque lettre de l'alphabet
+			var wordLength = 0;
 			foreach (var lettre in alpha){
 				
-				var wordLength = wordCombination.Length;
+				wordLength = wordCombination.Length;
 
+				//test utile ?
 				if (wordLength > 0) {
+					//pour chaque lettre
 					for (var i = 0; i < wordLength; i++) {
+
 						if (i == wordCombination.Length) {
 							break;
 						}
@@ -426,11 +442,32 @@ public class GameManager : MonoBehaviour {
 
 			}
 			combinationDictionary.Add (newCombination);
+		}*/
+		var dictionaryLength = dictionary.length;
+		var wordFound = false;
+		/*for(int i = 0; i < dictionaryLength && !wordFound; i++){
+			foreach (var letter in combinationLetters){
+				if(!dictionary[i].IndexOf(letter) > -1){
+					break;
+				}
+				wordFound = true;
+			}
 		}
+		return true;*/
+
+		for(int i = 0; i < dictionaryLength; i++){
+			foreach (var letter in combinationLetters){
+				if(!dictionary[i].IndexOf(letter) > -1){
+					break;
+				}
+				return true;
+			}
+		}
+		
 	}
 }
 /*
-	$z = test how many vowels max, how many cons max (maybe 4)
+	$z = test how many vowels max, how many cons max (4 vowels 5 cons)
 
 	do a random combination ($z vowels and cons)
 	check if one or more word with it
@@ -445,5 +482,7 @@ public class GameManager : MonoBehaviour {
 			select combination that can be done with unused letters, and take a random one (+ random letters $z)
 			fill buttons
 
-
+	fix OE in dictionnary generated
+	check if checkcombination work
+	use it at right place
 */
