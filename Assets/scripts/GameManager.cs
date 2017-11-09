@@ -108,7 +108,10 @@ public class GameManager : MonoBehaviour {
 	private List<string> dictionary = new List<string>();
 	private List<string> combinationDictionary = new List<string>();
 
-	public List<string> alpha = new List<string>(new string[] {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"});
+	public List<string> alpha = new List<string>();
+	for (char c = 'A'; c <= 'Z'; c++){
+    	alpha.Add("" + c);
+	}
 
 	// Use this for initialization
 	void Start () {
@@ -125,6 +128,9 @@ public class GameManager : MonoBehaviour {
 		word.text = "";
 
 		getPossibleCombination ();
+		//Keep only distinct combination and sort DESC
+		combinationdictionary = combinationdictionary.Distinct().ToList();
+		List.sort(combinationdictionary);
 	}
 	
 	// Update is called once per frame
@@ -381,6 +387,10 @@ public class GameManager : MonoBehaviour {
 		return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
 	}
 
+	/*
+		OPTIM
+		String.Concat(str.OrderBy(c => c))
+	*/
 	public void getPossibleCombination(){
 		foreach (var word in dictionary){
 			
@@ -419,3 +429,21 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 }
+/*
+	$z = test how many vowels max, how many cons max (maybe 4)
+
+	do a random combination ($z vowels and cons)
+	check if one or more word with it
+		fill buttons : redo
+
+	word is done
+	empty used letters, keep unused letters (same button)
+	do a random comb with letters ($z)
+	check comb
+		fill buttons : redo and $i = count random comb done ++
+		$i == 5
+			select combination that can be done with unused letters, and take a random one (+ random letters $z)
+			fill buttons
+
+
+*/
