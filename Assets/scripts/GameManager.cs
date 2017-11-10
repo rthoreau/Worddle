@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using System.Text;
 using System.Globalization;
+using System.Linq;
 
 using UnityEngine.UI;
 
@@ -112,16 +113,18 @@ public class GameManager : MonoBehaviour {
 	private string internalDictionaryMetaPath = "Assets\\datas\\dictionary.txt.meta";
 
 	public List<string> alpha = new List<string>();
-	for (char c = 'A'; c <= 'Z'; c++){
-		alpha.Add("" + c);
-	}
 
 	// Use this for initialization
 	void Start () {
 		
+		for(char c = 'A'; c <= 'Z'; c++){
+			alpha.Add("" + c);
+		}
+		
 		//Init interface elements
 		buttons = new Button[]{b1, b2, b3, b4, b5, b6};
 		word.text = "";
+
 		//Fil buttons with letters
 		fillLetters ();
 
@@ -133,14 +136,17 @@ public class GameManager : MonoBehaviour {
 		//Get dictionnary from file
 		setDictionary ();
 
-		//order each combination, keep distinct, order all combination
-		combinationdictionary = String.Concat(dictionary.OrderBy(c => c));
-		combinationdictionary = combinationdictionary.Distinct().ToList();
-		List.sort(combinationdictionary);
 
-		//getPossibleCombination ();
+		/*
+			OPTIM
+			String.Concat(str.OrderBy(c => c))
+		*/
+
+		//order each combination, keep distinct, order all combination
+		var test = combinationDictionary.Concat(dictionary.OrderBy(c => c)).Distinct().ToList();
+
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 		
@@ -158,8 +164,13 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public void fillLetters(){
+		List<string> newCombination;
+		//Do a random comb while not valid
+		do {
+			newCombination = getLetters ();
+		} while(!checkCombination (newCombination)); 
 
-		currentLetters = Shuffle (getLetters ());
+		currentLetters = Shuffle (newCombination);
 
 		for(int i = 0; i < buttons.Length; i++) { 
 			buttons[i].GetComponent <ButtonControl> ().textContent.text = currentLetters[i];
@@ -397,75 +408,33 @@ public class GameManager : MonoBehaviour {
 		return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
 	}
 
-	/*
-		OPTIM
-		String.Concat(str.OrderBy(c => c))
-	*/
-	public void checkCombination(List<string> combinationLetters){
-		//pour chaque mot
-		/*foreach (var word in dictionary){
-			
-			Debug.Log (word);
-			var newCombination = "";
-			var wordCombination = word;
+	public bool checkCombination(List<string> combinationLetters){
+		var dictionaryLength = dictionary.Count;
 
-			// pour chaque lettre de l'alphabet
-			var wordLength = 0;
-			foreach (var lettre in alpha){
-				
-				wordLength = wordCombination.Length;
+		//For all words
+		for(int i = 0; i < dictionaryLength; i++){
+			var wordLength = dictionary[i].Length;
 
-				//test utile ?
-				if (wordLength > 0) {
-					//pour chaque lettre
-					for (var i = 0; i < wordLength; i++) {
-
-						if (i == wordCombination.Length) {
-							break;
-						}
-						if (wordCombination [i].ToString () == lettre) {
-							Debug.Log (wordCombination [i]);
-							Debug.Log ("est dans le mot");
-							newCombination = newCombination + wordCombination [i];
-							if (i == 0) {
-								wordCombination = wordCombination.Substring (1, wordCombination.Length - 1);
-							} else if (i == wordCombination.Length - 1) {
-								wordCombination = wordCombination.Substring (0, wordCombination.Length - 1);
-							} else {
-								wordCombination = wordCombination.Substring (0, i) + wordCombination.Substring (i + 1, wordCombination.Length - (i + 1));
-							}
-							Debug.Log (wordCombination);
-							i--;
-						}
+			//For all letters in the word
+			for (int j = 0; j < wordLength; j++) {
+				//If letter is not in word, go next
+				if(combinationLetters.IndexOf(dictionary[i][j]) < 0){
+					break;
+				}else{
+					//If last letter is ok, this word can be done
+					if(i == wordLength -1){
+						Debug.Log ("Word can be done");
+						Debug.Log (dictionary[i]);
+						return true;
 					}
 				}
-
-			}
-			combinationDictionary.Add (newCombination);
-		}*/
-		var dictionaryLength = dictionary.length;
-		var wordFound = false;
-		/*for(int i = 0; i < dictionaryLength && !wordFound; i++){
-			foreach (var letter in combinationLetters){
-				if(!dictionary[i].IndexOf(letter) > -1){
-					break;
-				}
-				wordFound = true;
 			}
 		}
-		return true;*/
 
-		for(int i = 0; i < dictionaryLength; i++){
-			foreach (var letter in combinationLetters){
-				if(!dictionary[i].IndexOf(letter) > -1){
-					break;
-				}
-				return true;
-			}
-		}
-		
+		return false;
 	}
 }
+
 /*
 	$z = test how many vowels max, how many cons max (4 vowels 5 cons)
 
@@ -486,3 +455,4 @@ public class GameManager : MonoBehaviour {
 	check if checkcombination work
 	use it at right place
 */
+
