@@ -164,12 +164,10 @@ public class GameManager : MonoBehaviour {
 		//Do a random comb while not valid
 		newCombination = getLetters ();
 
-		Debug.Log(checkCombination (newCombination));
-
-		/*do {
+		do {
 			newCombination = getLetters ();
 		} while(!checkCombination (newCombination)); 
-		*/
+
 		currentLetters = Shuffle (newCombination);
 
 		for(int i = 0; i < buttons.Length; i++) { 
@@ -225,8 +223,10 @@ public class GameManager : MonoBehaviour {
 			}
 		}
 
-		List<string> vowelSelected = getRandom (vowelRated, 2, vowelMultiple);
-		List<string> consonantSelected = getRandom (consonantRated, 4, consonantMultiple);
+		int randomVowsAndCons = Random.Range (1, 4);
+
+		List<string> vowelSelected = getRandom (vowelRated, randomVowsAndCons, vowelMultiple);
+		List<string> consonantSelected = getRandom (consonantRated, 6 - randomVowsAndCons, consonantMultiple);
 
 		// BUG
 		//return vowelSelected.AddRange (consonantSelected);
@@ -466,8 +466,6 @@ public class GameManager : MonoBehaviour {
 	$z = test how many vowels max, how many cons max (4 vowels 5 cons)
 
 	do a random combination ($z vowels and cons)
-	check if one or more word with it
-		? fill buttons : redo
 
 	word is done
 	empty used letters, keep unused letters (same button)
@@ -479,7 +477,5 @@ public class GameManager : MonoBehaviour {
 			fill buttons
 
 	fix OE in dictionnary generated
-	check if checkcombination work
-	use it at right place
 */
 
