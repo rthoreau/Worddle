@@ -455,4 +455,3 @@ public class GameManager : MonoBehaviour {
 	check if checkcombination work
 	use it at right place
 */
-
