@@ -514,5 +514,6 @@ public class GameManager : MonoBehaviour {
 	bonus:animation de meileur score, faire bouger les éléments indépendamment
 	trouver dictionnaire plus complet (pluriels, accords... et le mot flute)
 	en js faire un compteur de mots, quels caractères utilisés (spéciaux surtout), combien de caractère max d'une lettre, combien de fois ce nb de caractère max
+	faire rercherche de combinaison possible via Linq (Link.where(_ => _.truc = valeur))
 */
 
