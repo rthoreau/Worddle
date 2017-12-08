@@ -450,13 +450,13 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public bool checkCombination(List<string> combinationLetters){
-		var combinationLength = combinationDictionary.Count;
-
+		int combinationLength = combinationDictionary.Count;
+		List<string>  tempCombinationLetters = combinationLetters;
 		//For all words
 		for(int i = 0; i < combinationLength; i++){
-			var wordLength = combinationDictionary[i].Length;
+			int wordLength = combinationDictionary[i].Length;
 			//Set a tempCombination to remove letters and handdle multiple letters
-			var tempCombinationLetters = combinationLetters;
+			tempCombinationLetters = combinationLetters;
 
 			//For all letters in the word
 			for (int j = 0; j < wordLength; j++) {
