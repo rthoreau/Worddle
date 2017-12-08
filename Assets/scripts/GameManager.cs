@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Globalization;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 using UnityEngine.UI;
 
@@ -140,6 +141,10 @@ public class GameManager : MonoBehaviour {
 
 		//Fil buttons with letters
 		fillLetters ();
+
+		/*SceneManager.LoadScene ();
+			DontDestroyOnLoad ();
+		SceneManager.LoadScene ("eorgj",LoadSceneMode.Additive);*/
 
 	}
 
@@ -477,5 +482,13 @@ public class GameManager : MonoBehaviour {
 			fill buttons
 
 	fix OE in dictionnary generated
+	
+	ajouter un caractère espace entre les lettres (et supprimer avec la lettre sur bouton effacer)
+	utiliser fonction sinus et cosinus pour position de l'image vague, pour faire des variations
+	loadscene additive pour le jeu, et décharger accueil et rejouer en additive (pour pas reprendre du temps pour le screen)
+	prendre composant pour afficher score/font/bouton rejouer plutot que scene ?
+	refaire images pour qu'elles matchent mieux avec les bords (+ cercle rose du compteur + vagues + fond blanc compteur + fond blanc chrono/refresh
+
+	bonus:animation de meileur score, faire bouger les éléments indépendamment
 */
 
