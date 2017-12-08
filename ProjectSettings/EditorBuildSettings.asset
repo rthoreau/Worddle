@@ -4,4 +4,10 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Worddle.unity
+    guid: 78676268b9bd642189ec3f6dcf218c84
+  - enabled: 1
+    path: Assets/gameScreen.unity
+    guid: ab28b9276a9664aaa8f0bf3e88b3a52e
