@@ -106,7 +106,7 @@ public class GameManager : MonoBehaviour {
 	private Button[] buttons;
 	private string currentWord = "";
 	private List<string> currentLetters;
-	private int[] currentButtonsIndexes = new int[]{0, 0, 0, 0, 0, 0};
+	private int[] currentButtonsIndexes = new int[]{9, 9, 9, 9, 9, 9};
 	private List<string> dictionary = new List<string>();
 	private List<string> combinationDictionary = new List<string>();
 
@@ -143,8 +143,9 @@ public class GameManager : MonoBehaviour {
 		fillLetters ();
 
 		/*SceneManager.LoadScene ();
-			DontDestroyOnLoad ();
-		SceneManager.LoadScene ("eorgj",LoadSceneMode.Additive);*/
+			DontDestroyOnLoad (); // pour un element
+		SceneManager.LoadScene ("eorgj",LoadSceneMode.Additive);//Additive pour ne pas supprimer la scene deja chargée
+		*/
 
 	}
 
@@ -210,7 +211,16 @@ public class GameManager : MonoBehaviour {
 	}
 
 	//Set the list of letters with rates, and call getRandom, return a 6 letters list
-	public List<string> getLetters(){
+	public List<string> getLetters(int[] keepPositions = null){
+
+		if (keepPositions != null) {
+			Debug.Log ("keep letters");
+			foreach(int k in keepPositions){
+				if (k != 9) {
+					Debug.Log (k);
+				}
+			}
+		}
 		
 		List<string> vowelRated = new List<string>();
 		for (int i = 0; i < vowelRate.Length/2; i++) {
@@ -241,13 +251,10 @@ public class GameManager : MonoBehaviour {
 		}
 		vowelSelected.Sort();
 
-		if (false) {
-			Debug.Log ("combination");
-			foreach (var ccc in vowelSelected) {
-				Debug.Log (ccc);
-			}
-			Debug.Log ("combination");
-		}
+		/*Debug.Log ("combination");
+		foreach (var ccc in vowelSelected) {
+			Debug.Log (ccc);
+		}*/
 
 		return vowelSelected;
 	}
@@ -406,6 +413,11 @@ public class GameManager : MonoBehaviour {
 						currentWord = currentWord.Substring (0, currentWord.Length - 1);
 						buttons [currentButtonsIndexes [currentWord.Length]].interactable = true;
 
+						//appeler fonction getCombination en passant un paramètre contenant les lettres/positions à garder
+						getLetters (currentButtonsIndexes);
+						//appeler la fonction shuffle en gardant la position des anciennes lettres
+						//appeler useletters
+
 						word.text = currentWord;
 					}
 
@@ -443,18 +455,24 @@ public class GameManager : MonoBehaviour {
 		//For all words
 		for(int i = 0; i < combinationLength; i++){
 			var wordLength = combinationDictionary[i].Length;
+			//Set a tempCombination to remove letters and handdle multiple letters
+			var tempCombinationLetters = combinationLetters;
 
 			//For all letters in the word
 			for (int j = 0; j < wordLength; j++) {
-				//If letter is not in word, go next
-				if(combinationLetters.IndexOf(combinationDictionary[i][j].ToString()) < 0){
+				//Get position of letter
+				int posInWord = tempCombinationLetters.IndexOf(combinationDictionary[i][j].ToString());
+
+				//If not in, next word
+				if(posInWord < 0){
 					break;
 				}else{
+					tempCombinationLetters.RemoveAt (posInWord);
 					//If last letter is ok, this word can be done
-					if(j == wordLength -1){
+					if(j == wordLength - 1){
 						if (dev) {
 							for (int k = 0; k < wordLength; k++) {
-								Debug.Log (combinationLetters[k]);
+								Debug.Log (combinationDictionary[i][k]);
 							}
 						}
 						return true;
@@ -481,7 +499,9 @@ public class GameManager : MonoBehaviour {
 			select combination that can be done with unused letters, and take a random one (+ random letters $z)
 			fill buttons
 
-	fix OE in dictionnary generated
+	fix OE in dictionnary generated, tous les mots à accents vires ?
+
+	bouton refresh : avoir au moins 3 lettres différentes en sortie (donc stocker ancienne)s
 	
 	ajouter un caractère espace entre les lettres (et supprimer avec la lettre sur bouton effacer)
 	utiliser fonction sinus et cosinus pour position de l'image vague, pour faire des variations
@@ -489,6 +509,10 @@ public class GameManager : MonoBehaviour {
 	prendre composant pour afficher score/font/bouton rejouer plutot que scene ?
 	refaire images pour qu'elles matchent mieux avec les bords (+ cercle rose du compteur + vagues + fond blanc compteur + fond blanc chrono/refresh
 
+	ajouter points sur les lettres, compter les points, faire les timers, faire les combos
+
 	bonus:animation de meileur score, faire bouger les éléments indépendamment
+	trouver dictionnaire plus complet (pluriels, accords... et le mot flute)
+	en js faire un compteur de mots, quels caractères utilisés (spéciaux surtout), combien de caractère max d'une lettre, combien de fois ce nb de caractère max
 */
 
