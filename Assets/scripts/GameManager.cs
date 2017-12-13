@@ -467,7 +467,7 @@ public class GameManager : MonoBehaviour {
 				if(posInWord < 0){
 					break;
 				}else{
-					tempCombinationLetters.RemoveAt (posInWord);
+					//tempCombinationLetters.RemoveAt (posInWord);
 					//If last letter is ok, this word can be done
 					if(j == wordLength - 1){
 						if (dev) {
