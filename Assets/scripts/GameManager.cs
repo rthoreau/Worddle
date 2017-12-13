@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Globalization;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 using UnityEngine.UI;
 
@@ -16,7 +17,7 @@ public class GameManager : MonoBehaviour {
 	//Scripts & Files
 
 	private ButtonControl buttonControl;
-	private string externalDictionaryFileName = "Assets\\datas\\liste_francais.txt";
+	private string externalDictionaryFileName = "Assets/datas/liste_francais.txt";
 
 	//Text Elements
 
@@ -105,14 +106,16 @@ public class GameManager : MonoBehaviour {
 	private Button[] buttons;
 	private string currentWord = "";
 	private List<string> currentLetters;
-	private int[] currentButtonsIndexes = new int[]{0, 0, 0, 0, 0, 0};
+	private int[] currentButtonsIndexes = new int[]{9, 9, 9, 9, 9, 9};
 	private List<string> dictionary = new List<string>();
 	private List<string> combinationDictionary = new List<string>();
 
-	private string internalDictionaryPath = "Assets\\datas\\dictionary.txt";
-	private string internalDictionaryMetaPath = "Assets\\datas\\dictionary.txt.meta";
+	private string internalDictionaryPath = "Assets/datas/dictionary.txt";
+	private string internalDictionaryMetaPath = "Assets/datas/dictionary.txt.meta";
 
 	public List<string> alpha = new List<string>();
+
+	public bool dev = true;
 
 	// Use this for initialization
 	void Start () {
@@ -125,9 +128,6 @@ public class GameManager : MonoBehaviour {
 		buttons = new Button[]{b1, b2, b3, b4, b5, b6};
 		word.text = "";
 
-		//Fil buttons with letters
-		fillLetters ();
-
 		//Generate dictionnary file
 		if (forceGeneration || !File.Exists(externalDictionaryFileName)) {
 			generateDictionary ();
@@ -136,14 +136,16 @@ public class GameManager : MonoBehaviour {
 		//Get dictionnary from file
 		setDictionary ();
 
+		setCombinations ();
 
-		/*
-			OPTIM
-			String.Concat(str.OrderBy(c => c))
+
+		//Fil buttons with letters
+		fillLetters ();
+
+		/*SceneManager.LoadScene ();
+			DontDestroyOnLoad (); // pour un element
+		SceneManager.LoadScene ("eorgj",LoadSceneMode.Additive);//Additive pour ne pas supprimer la scene deja chargée
 		*/
-
-		//order each combination, keep distinct, order all combination
-		var test = combinationDictionary.Concat(dictionary.OrderBy(c => c)).Distinct().ToList();
 
 	}
 
@@ -166,6 +168,8 @@ public class GameManager : MonoBehaviour {
 	public void fillLetters(){
 		List<string> newCombination;
 		//Do a random comb while not valid
+		newCombination = getLetters ();
+
 		do {
 			newCombination = getLetters ();
 		} while(!checkCombination (newCombination)); 
@@ -207,7 +211,16 @@ public class GameManager : MonoBehaviour {
 	}
 
 	//Set the list of letters with rates, and call getRandom, return a 6 letters list
-	public List<string> getLetters(){
+	public List<string> getLetters(int[] keepPositions = null){
+
+		if (keepPositions != null) {
+			Debug.Log ("keep letters");
+			foreach(int k in keepPositions){
+				if (k != 9) {
+					Debug.Log (k);
+				}
+			}
+		}
 		
 		List<string> vowelRated = new List<string>();
 		for (int i = 0; i < vowelRate.Length/2; i++) {
@@ -225,8 +238,10 @@ public class GameManager : MonoBehaviour {
 			}
 		}
 
-		List<string> vowelSelected = getRandom (vowelRated, 2, vowelMultiple);
-		List<string> consonantSelected = getRandom (consonantRated, 4, consonantMultiple);
+		int randomVowsAndCons = Random.Range (1, 4);
+
+		List<string> vowelSelected = getRandom (vowelRated, randomVowsAndCons, vowelMultiple);
+		List<string> consonantSelected = getRandom (consonantRated, 6 - randomVowsAndCons, consonantMultiple);
 
 		// BUG
 		//return vowelSelected.AddRange (consonantSelected);
@@ -234,6 +249,12 @@ public class GameManager : MonoBehaviour {
 		for (int i = 0; i < consonantSelected.Count; i++) {
 			vowelSelected.Add(consonantSelected[i]);
 		}
+		vowelSelected.Sort();
+
+		/*Debug.Log ("combination");
+		foreach (var ccc in vowelSelected) {
+			Debug.Log (ccc);
+		}*/
 
 		return vowelSelected;
 	}
@@ -362,6 +383,19 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	public void setCombinations(){
+		foreach (var word in dictionary) {
+			var temp = word.ToList();
+			temp.Sort();
+			string tempstring = "";
+			foreach (var letter in temp) {
+				tempstring = tempstring + letter;
+			}
+			combinationDictionary.Add (tempstring);
+		}
+		combinationDictionary = combinationDictionary.Distinct().ToList();
+	}
+
 	public void checkWord(){
 		if (currentWord.Length >= 3) {
 			bool wordFound = false;
@@ -370,12 +404,19 @@ public class GameManager : MonoBehaviour {
 			// OPTIMISABLE - en passant par un  predicat (faire une class, chaque mot devient un objet de cette classe, et on peut faire une recherche dans le tableau
 			while (i < dictionary.Count && wordFound == false) {
 				if (currentWord == dictionary [i]) {
-					Debug.Log ("GG !");
+					if (dev) {
+						Debug.Log ("GG !");
+					}
 					wordFound = true;
 
 					while(currentWord.Length > 0){
 						currentWord = currentWord.Substring (0, currentWord.Length - 1);
 						buttons [currentButtonsIndexes [currentWord.Length]].interactable = true;
+
+						//appeler fonction getCombination en passant un paramètre contenant les lettres/positions à garder
+						getLetters (currentButtonsIndexes);
+						//appeler la fonction shuffle en gardant la position des anciennes lettres
+						//appeler useletters
 
 						word.text = currentWord;
 					}
@@ -384,7 +425,7 @@ public class GameManager : MonoBehaviour {
 				}
 				i++;
 			}
-			if (wordFound == false) {
+			if (wordFound == false && dev) {
 				Debug.Log ("Nope !");
 			}
 		}
@@ -409,22 +450,31 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public bool checkCombination(List<string> combinationLetters){
-		var dictionaryLength = dictionary.Count;
-
+		int combinationLength = combinationDictionary.Count;
+		List<string>  tempCombinationLetters = combinationLetters;
 		//For all words
-		for(int i = 0; i < dictionaryLength; i++){
-			var wordLength = dictionary[i].Length;
+		for(int i = 0; i < combinationLength; i++){
+			int wordLength = combinationDictionary[i].Length;
+			//Set a tempCombination to remove letters and handdle multiple letters
+			tempCombinationLetters = combinationLetters;
 
 			//For all letters in the word
 			for (int j = 0; j < wordLength; j++) {
-				//If letter is not in word, go next
-				if(combinationLetters.IndexOf(dictionary[i][j]) < 0){
+				//Get position of letter
+				int posInWord = tempCombinationLetters.IndexOf(combinationDictionary[i][j].ToString());
+
+				//If not in, next word
+				if(posInWord < 0){
 					break;
 				}else{
+					tempCombinationLetters.RemoveAt (posInWord);
 					//If last letter is ok, this word can be done
-					if(i == wordLength -1){
-						Debug.Log ("Word can be done");
-						Debug.Log (dictionary[i]);
+					if(j == wordLength - 1){
+						if (dev) {
+							for (int k = 0; k < wordLength; k++) {
+								Debug.Log (combinationDictionary[i][k]);
+							}
+						}
 						return true;
 					}
 				}
@@ -439,19 +489,30 @@ public class GameManager : MonoBehaviour {
 	$z = test how many vowels max, how many cons max (4 vowels 5 cons)
 
 	do a random combination ($z vowels and cons)
-	check if one or more word with it
-		fill buttons : redo
 
 	word is done
 	empty used letters, keep unused letters (same button)
 	do a random comb with letters ($z)
 	check comb
-		fill buttons : redo and $i = count random comb done ++
+		? fill buttons : redo and $i = count random comb done ++
 		$i == 5
 			select combination that can be done with unused letters, and take a random one (+ random letters $z)
 			fill buttons
 
-	fix OE in dictionnary generated
-	check if checkcombination work
-	use it at right place
+	fix OE in dictionnary generated, tous les mots à accents vires ?
+
+	bouton refresh : avoir au moins 3 lettres différentes en sortie (donc stocker ancienne)s
+	
+	ajouter un caractère espace entre les lettres (et supprimer avec la lettre sur bouton effacer)
+	utiliser fonction sinus et cosinus pour position de l'image vague, pour faire des variations
+	loadscene additive pour le jeu, et décharger accueil et rejouer en additive (pour pas reprendre du temps pour le screen)
+	prendre composant pour afficher score/font/bouton rejouer plutot que scene ?
+	refaire images pour qu'elles matchent mieux avec les bords (+ cercle rose du compteur + vagues + fond blanc compteur + fond blanc chrono/refresh
+
+	ajouter points sur les lettres, compter les points, faire les timers, faire les combos
+
+	bonus:animation de meileur score, faire bouger les éléments indépendamment
+	trouver dictionnaire plus complet (pluriels, accords... et le mot flute)
+	en js faire un compteur de mots, quels caractères utilisés (spéciaux surtout), combien de caractère max d'une lettre, combien de fois ce nb de caractère max
+	faire rercherche de combinaison possible via Linq (Link.where(_ => _.truc = valeur))
 */
