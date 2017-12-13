@@ -158,8 +158,8 @@ public class GameManager : MonoBehaviour {
 	{ 
 		for(int i = 0; i < lArray.Count - 1; i++) { 
 			int k = Random.Range (0, lArray.Count - 1);  
-			string value = lArray[k];  
-			lArray[k] = lArray[i];  
+			string value = lArray[k];
+			lArray[k] = lArray[i];
 			lArray[i] = value;
 		}
 		return lArray;
@@ -168,13 +168,16 @@ public class GameManager : MonoBehaviour {
 	public void fillLetters(){
 		List<string> newCombination;
 		//Do a random comb while not valid
-		newCombination = getLetters ();
-
 		do {
 			newCombination = getLetters ();
 		} while(!checkCombination (newCombination)); 
 
 		currentLetters = Shuffle (newCombination);
+		Debug.Log ("Lettres générées testées");
+		for (int jj = 0; jj < currentLetters.Count; jj++) {
+			Debug.Log (currentLetters[jj]);
+		}
+		Debug.Log ("/Lettres générées testées");
 
 		for(int i = 0; i < buttons.Length; i++) { 
 			buttons[i].GetComponent <ButtonControl> ().textContent.text = currentLetters[i];
@@ -251,10 +254,11 @@ public class GameManager : MonoBehaviour {
 		}
 		vowelSelected.Sort();
 
-		/*Debug.Log ("combination");
+		Debug.Log ("combination");
 		foreach (var ccc in vowelSelected) {
 			Debug.Log (ccc);
-		}*/
+		}
+		Debug.Log ("/combination");
 
 		return vowelSelected;
 	}
@@ -450,10 +454,10 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public bool checkCombination(List<string> combinationLetters){
-		int combinationLength = combinationDictionary.Count;
+		int combinationDictionaryLength = combinationDictionary.Count;
 		List<string>  tempCombinationLetters = combinationLetters;
 		//For all words
-		for(int i = 0; i < combinationLength; i++){
+		for(int i = 0; i < combinationDictionaryLength; i++){
 			int wordLength = combinationDictionary[i].Length;
 			//Set a tempCombination to remove letters and handdle multiple letters
 			tempCombinationLetters = combinationLetters;
@@ -462,12 +466,11 @@ public class GameManager : MonoBehaviour {
 			for (int j = 0; j < wordLength; j++) {
 				//Get position of letter
 				int posInWord = tempCombinationLetters.IndexOf(combinationDictionary[i][j].ToString());
-
 				//If not in, next word
 				if(posInWord < 0){
 					break;
 				}else{
-					//tempCombinationLetters.RemoveAt (posInWord);
+					tempCombinationLetters.RemoveAt (posInWord);
 					//If last letter is ok, this word can be done
 					if(j == wordLength - 1){
 						if (dev) {
@@ -501,7 +504,9 @@ public class GameManager : MonoBehaviour {
 
 	fix OE in dictionnary generated, tous les mots à accents vires ?
 
-	bouton refresh : avoir au moins 3 lettres différentes en sortie (donc stocker ancienne)s
+	bouton refresh : avoir au moins 3 lettres différentes en sortie (donc stocker ancienne)
+
+	supprimer mot du dictionnaire (pas du fichier, du dico généré) pour pas pouvoir le refaire
 	
 	ajouter un caractère espace entre les lettres (et supprimer avec la lettre sur bouton effacer)
 	utiliser fonction sinus et cosinus pour position de l'image vague, pour faire des variations
