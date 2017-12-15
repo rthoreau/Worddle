@@ -154,30 +154,89 @@ public class GameManager : MonoBehaviour {
 		
 	}
 
-	public List<string> Shuffle(List<string> lArray)  
-	{ 
-		for(int i = 0; i < lArray.Count - 1; i++) { 
-			int k = Random.Range (0, lArray.Count - 1);  
-			string value = lArray[k];
-			lArray[k] = lArray[i];
-			lArray[i] = value;
+	public List<string> Shuffle(List<string> lArray, int[] keepPositions = null)  
+	{
+		List<string> lettersGenerated = new List<string> ();
+		List<string> lettersToShuffle = new List<string> ();
+
+		if (keepPositions != null) {
+			lettersGenerated = lArray.Select(item => (string)item.Clone()).ToList();
+			//Select the new letters
+
+			//faire un nouveau tableau T (1 2 3 4 5 6)
+			//virer les valeurs présentes dans keepositions
+
+			//for i=0, T
+			//letterGenerated.Add(T[i]
+
+			//copypaste
+			for (int i = 0; i < keepPositions.Length;i++){
+				if (keepPositions[i] != 9) {
+					lettersGenerated [keepPositions [i]] = "";
+				}
+			}
+			for (int i = 0; i < lettersGenerated.Count; i++) {
+				Debug.Log (lettersGenerated [i]);
+			}
 		}
-		return lArray;
+
+		//ancienne version
+		/*if (keepPositions != null) {
+			Debug.Log ("Keep positions");
+			for (int i = 0; i < keepPositions.Length; i++) {
+				if (keepPositions [i] != 9) {
+					//Lettre to reroll
+					//Debug.Log (keepPositions[i]);
+					lettersGenerated.Add ("");
+					lettersToShuffle.Add (lArray [i]);
+				} else {
+					lettersGenerated.Add (lArray [i]);
+				}
+			}
+		} else {
+			lettersToShuffle = lArray;
+		}*/
+
+		if (false) {
+			Debug.Log ("lettre generees shuffle");
+			foreach (var ccc in lettersToShuffle) {
+				Debug.Log (ccc);
+			}
+			Debug.Log ("/lettre generees shuffle");
+		}
+
+		for(int i = 0; i < lettersToShuffle.Count - 1; i++) { 
+			int k = Random.Range (0, lettersToShuffle.Count - 1);  
+			string value = lettersToShuffle[k];
+			lettersToShuffle[k] = lettersToShuffle[i];
+			lettersToShuffle[i] = value;
+		}
+
+		//Faire une fonction pour remplir les cases vides d'un tableau par un autre tableau fillEmpty(tableau avec vide, tableau pour copmleter)
+		int lettersGeneratedCount = lettersGenerated.Count;
+		for (int i = 0; i < lettersToShuffle.Count; i++) {
+			if (lettersGeneratedCount != 0) {
+				int j = 0;
+				while (lettersGenerated [j] != "") {
+					j++;
+				}
+				lettersGenerated [j] = lettersToShuffle [i];
+			} else {
+				lettersGenerated.Add (lettersToShuffle [i]);
+			}
+		}
+
+		return lettersGenerated;
 	}
 
-	public void fillLetters(){
+	public void fillLetters(int[] keepPositions = null){
 		List<string> newCombination;
 		//Do a random comb while not valid
 		do {
-			newCombination = getLetters ();
-		} while(!checkCombination (newCombination)); 
+			newCombination = getLetters (keepPositions);
+		} while(!checkCombination (newCombination));
 
-		currentLetters = Shuffle (newCombination);
-		Debug.Log ("Lettres générées testées");
-		for (int jj = 0; jj < currentLetters.Count; jj++) {
-			Debug.Log (currentLetters[jj]);
-		}
-		Debug.Log ("/Lettres générées testées");
+		currentLetters = Shuffle (newCombination, keepPositions);
 
 		for(int i = 0; i < buttons.Length; i++) { 
 			buttons[i].GetComponent <ButtonControl> ().textContent.text = currentLetters[i];
@@ -216,13 +275,34 @@ public class GameManager : MonoBehaviour {
 	//Set the list of letters with rates, and call getRandom, return a 6 letters list
 	public List<string> getLetters(int[] keepPositions = null){
 
+		//ismultiple est vérifié quand keepPositions ? tester
+		List<string> lettersGenerated = new List<string> ();
+		List<string> vows = new List<string> (new string[] { "A", "E", "I", "O", "U", "Y" });
+		int vowsToKeep = 0, consToKeep = 0;
+
 		if (keepPositions != null) {
+			lettersGenerated = currentLetters.Select(item => (string)item.Clone()).ToList();
 			Debug.Log ("keep letters");
-			foreach(int k in keepPositions){
-				if (k != 9) {
-					Debug.Log (k);
+			//Remove the used letters
+			for (int i = 0; i < keepPositions.Length;i++){
+				if (keepPositions[i] != 9) {
+					lettersGenerated [keepPositions [i]] = "";
 				}
 			}
+
+			//Check amount of vows and cons
+			for (int i = 0; i < keepPositions.Length;i++){
+				if(lettersGenerated[i] != ""){
+					consToKeep++;
+					if (vows.IndexOf (lettersGenerated [i].ToString()) >= 0) {
+						vowsToKeep++;
+					}
+				}
+			}
+			for (int i = 0; i < lettersGenerated.Count; i++) {
+				Debug.Log (lettersGenerated [i]);
+			}
+			consToKeep = consToKeep - vowsToKeep;
 		}
 		
 		List<string> vowelRated = new List<string>();
@@ -241,26 +321,49 @@ public class GameManager : MonoBehaviour {
 			}
 		}
 
-		int randomVowsAndCons = Random.Range (1, 4);
+		int randomVowsAndCons = Random.Range (1, 4 - vowsToKeep);
 
 		List<string> vowelSelected = getRandom (vowelRated, randomVowsAndCons, vowelMultiple);
-		List<string> consonantSelected = getRandom (consonantRated, 6 - randomVowsAndCons, consonantMultiple);
+		List<string> consonantSelected = getRandom (consonantRated, 6 - randomVowsAndCons - consToKeep, consonantMultiple);
 
-		// BUG
-		//return vowelSelected.AddRange (consonantSelected);
-
+		//Fill empty values with vows
+		int lettersGeneratedCount = lettersGenerated.Count;
+		for (int i = 0; i < vowelSelected.Count; i++) {
+			if (lettersGeneratedCount != 0) {
+				int j = 0;
+				while (lettersGenerated [j] != "") {
+					j++;
+				}
+				lettersGenerated [j] = vowelSelected [i];
+			} else {
+				lettersGenerated.Add (vowelSelected [i]);
+			}
+		}
+		//Fill empty values with cons
 		for (int i = 0; i < consonantSelected.Count; i++) {
-			vowelSelected.Add(consonantSelected[i]);
+			if (lettersGeneratedCount != 0) {
+				int j = 0;
+				while (lettersGenerated [j] != "") {
+					j++;
+				}
+				lettersGenerated [j] = consonantSelected [i];
+			} else {
+				lettersGenerated.Add (consonantSelected [i]);
+			}
 		}
-		vowelSelected.Sort();
+		//vowelSelected.Sort();
 
-		Debug.Log ("combination");
-		foreach (var ccc in vowelSelected) {
-			Debug.Log (ccc);
+
+		Debug.Log ("lettersGenerated.Count");
+		Debug.Log (lettersGenerated.Count);
+
+		if (false) {
+			foreach (var ccc in lettersGenerated) {
+				Debug.Log (ccc);
+			}
 		}
-		Debug.Log ("/combination");
 
-		return vowelSelected;
+		return lettersGenerated;
 	}
 
 	// For a list of letter, return <number> of letters
@@ -413,17 +516,14 @@ public class GameManager : MonoBehaviour {
 					}
 					wordFound = true;
 
+					fillLetters (currentButtonsIndexes);
 					while(currentWord.Length > 0){
 						currentWord = currentWord.Substring (0, currentWord.Length - 1);
 						buttons [currentButtonsIndexes [currentWord.Length]].interactable = true;
 
-						//appeler fonction getCombination en passant un paramètre contenant les lettres/positions à garder
-						getLetters (currentButtonsIndexes);
-						//appeler la fonction shuffle en gardant la position des anciennes lettres
-						//appeler useletters
-
 						word.text = currentWord;
 					}
+					currentButtonsIndexes = new int[]{9, 9, 9, 9, 9, 9};
 
 					break;
 				}
@@ -455,12 +555,12 @@ public class GameManager : MonoBehaviour {
 
 	public bool checkCombination(List<string> combinationLetters){
 		int combinationDictionaryLength = combinationDictionary.Count;
-		List<string>  tempCombinationLetters = combinationLetters;
+		List<string>  tempCombinationLetters = new List<string> ();
 		//For all words
 		for(int i = 0; i < combinationDictionaryLength; i++){
 			int wordLength = combinationDictionary[i].Length;
 			//Set a tempCombination to remove letters and handdle multiple letters
-			tempCombinationLetters = combinationLetters;
+			tempCombinationLetters = combinationLetters.Select(item => (string)item.Clone()).ToList();
 
 			//For all letters in the word
 			for (int j = 0; j < wordLength; j++) {
@@ -474,6 +574,7 @@ public class GameManager : MonoBehaviour {
 					//If last letter is ok, this word can be done
 					if(j == wordLength - 1){
 						if (dev) {
+							Debug.Log(tempCombinationLetters.Count);
 							for (int k = 0; k < wordLength; k++) {
 								Debug.Log (combinationDictionary[i][k]);
 							}
