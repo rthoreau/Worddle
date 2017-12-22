@@ -587,6 +587,7 @@ public class GameManager : MonoBehaviour {
 
 	supprimer mot du dictionnaire (pas du fichier, du dico généré) pour pas pouvoir le refaire et régénerer combinationDictionnary (lourd, optimisale ?)
 	
+	gérer scene accueil, fin de jeu (ajouter les scène via préférence ou paramètre, toutes les scène, avec première scène)
 	ajouter un caractère espace entre les lettres (et supprimer avec la lettre sur bouton effacer)
 	utiliser fonction sinus et cosinus pour position de l'image vague, pour faire des variations
 	loadscene additive pour le jeu, et décharger accueil et rejouer en additive (pour pas reprendre du temps pour le screen)
