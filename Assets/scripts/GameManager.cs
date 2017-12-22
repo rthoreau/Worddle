@@ -455,6 +455,7 @@ public class GameManager : MonoBehaviour {
 		writer.Close();
 	}
 
+	//Convert internal generated file in list
 	public void setDictionary(){
 		TextReader reader;
 		if (File.Exists (internalDictionaryPath)) {
@@ -487,6 +488,7 @@ public class GameManager : MonoBehaviour {
 		combinationDictionary = combinationDictionary.Distinct().ToList();
 	}
 
+	//Check if word exist in dictionnary
 	public void checkWord(){
 		if (currentWord.Length >= 3) {
 			bool wordFound = false;
@@ -537,6 +539,7 @@ public class GameManager : MonoBehaviour {
 		return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
 	}
 
+	//Check if unless one word (one combination) can be done
 	public bool checkCombination(List<string> combinationLetters){
 		int combinationDictionaryLength = combinationDictionary.Count;
 		List<string>  tempCombinationLetters = new List<string> ();
@@ -574,24 +577,15 @@ public class GameManager : MonoBehaviour {
 }
 
 /*
-	$z = test how many vowels max, how many cons max (4 vowels 5 cons)
+ 	faire une fonction pour completer les valeurs vide dans un tableau avec les valeurs d'un autre
 
-	do a random combination ($z vowels and cons)
-
-	word is done
-	empty used letters, keep unused letters (same button)
-	do a random comb with letters ($z)
-	check comb
-		? fill buttons : redo and $i = count random comb done ++
-		$i == 5
-			select combination that can be done with unused letters, and take a random one (+ random letters $z)
-			fill buttons
+	is multiple testé quand keepPosition != null ?
 
 	fix OE in dictionnary generated, tous les mots à accents vires ?
 
 	bouton refresh : avoir au moins 3 lettres différentes en sortie (donc stocker ancienne)
 
-	supprimer mot du dictionnaire (pas du fichier, du dico généré) pour pas pouvoir le refaire
+	supprimer mot du dictionnaire (pas du fichier, du dico généré) pour pas pouvoir le refaire et régénerer combinationDictionnary (lourd, optimisale ?)
 	
 	ajouter un caractère espace entre les lettres (et supprimer avec la lettre sur bouton effacer)
 	utiliser fonction sinus et cosinus pour position de l'image vague, pour faire des variations
@@ -605,4 +599,5 @@ public class GameManager : MonoBehaviour {
 	trouver dictionnaire plus complet (pluriels, accords... et le mot flute)
 	en js faire un compteur de mots, quels caractères utilisés (spéciaux surtout), combien de caractère max d'une lettre, combien de fois ce nb de caractère max
 	faire rercherche de combinaison possible via Linq (Link.where(_ => _.truc = valeur))
+
 */
