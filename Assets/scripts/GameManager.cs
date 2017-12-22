@@ -159,50 +159,31 @@ public class GameManager : MonoBehaviour {
 		List<string> lettersGenerated = new List<string> ();
 		List<string> lettersToShuffle = new List<string> ();
 
+
 		if (keepPositions != null) {
-			lettersGenerated = lArray.Select(item => (string)item.Clone()).ToList();
 			//Select the new letters
 
+			List<int> positionToKeep = new List<int> { 0, 1, 2, 3, 4, 5 };
 			//faire un nouveau tableau T (1 2 3 4 5 6)
 			//virer les valeurs présentes dans keepositions
 
-			//for i=0, T
-			//letterGenerated.Add(T[i]
-
-			//copypaste
-			for (int i = 0; i < keepPositions.Length;i++){
-				if (keepPositions[i] != 9) {
-					lettersGenerated [keepPositions [i]] = "";
+			for (int i = 0; i < keepPositions.Length - 1; i++) {
+				if (keepPositions [i] != 9) {
+					positionToKeep.Remove (keepPositions [i]);
 				}
 			}
-			for (int i = 0; i < lettersGenerated.Count; i++) {
-				Debug.Log (lettersGenerated [i]);
-			}
-		}
 
-		//ancienne version
-		/*if (keepPositions != null) {
-			Debug.Log ("Keep positions");
 			for (int i = 0; i < keepPositions.Length; i++) {
-				if (keepPositions [i] != 9) {
-					//Lettre to reroll
-					//Debug.Log (keepPositions[i]);
+				//If letter has to be kept
+				if (positionToKeep.IndexOf (i) >= 0) {
+					lettersGenerated.Add (lArray [i]);
+				} else {
 					lettersGenerated.Add ("");
 					lettersToShuffle.Add (lArray [i]);
-				} else {
-					lettersGenerated.Add (lArray [i]);
 				}
 			}
 		} else {
 			lettersToShuffle = lArray;
-		}*/
-
-		if (false) {
-			Debug.Log ("lettre generees shuffle");
-			foreach (var ccc in lettersToShuffle) {
-				Debug.Log (ccc);
-			}
-			Debug.Log ("/lettre generees shuffle");
 		}
 
 		for(int i = 0; i < lettersToShuffle.Count - 1; i++) { 
@@ -241,6 +222,7 @@ public class GameManager : MonoBehaviour {
 		for(int i = 0; i < buttons.Length; i++) { 
 			buttons[i].GetComponent <ButtonControl> ().textContent.text = currentLetters[i];
 		}
+
 	}
 
 	//Action on LetterButton - Add letter in currentWord, and disable button
@@ -282,7 +264,7 @@ public class GameManager : MonoBehaviour {
 
 		if (keepPositions != null) {
 			lettersGenerated = currentLetters.Select(item => (string)item.Clone()).ToList();
-			Debug.Log ("keep letters");
+
 			//Remove the used letters
 			for (int i = 0; i < keepPositions.Length;i++){
 				if (keepPositions[i] != 9) {
@@ -312,7 +294,6 @@ public class GameManager : MonoBehaviour {
 				vowelRated.Add (vowelRate [i, 0]);
 			}
 		}
-
 		List<string> consonantRated = new List<string>();
 		for (int i = 0; i < consonantRate.Length/2; i++) {
 			int rate = int.Parse(consonantRate[i, 1]);
@@ -320,12 +301,20 @@ public class GameManager : MonoBehaviour {
 				consonantRated.Add (consonantRate [i, 0]);
 			}
 		}
-
-		int randomVowsAndCons = Random.Range (1, 4 - vowsToKeep);
+		int minVows = 1;
+		if (vowsToKeep > 0) {
+			minVows = 0;
+		}
+		int randomVowsAndCons = Random.Range (minVows, 4 - vowsToKeep);
 
 		List<string> vowelSelected = getRandom (vowelRated, randomVowsAndCons, vowelMultiple);
-		List<string> consonantSelected = getRandom (consonantRated, 6 - randomVowsAndCons - consToKeep, consonantMultiple);
+		List<string> consonantSelected = getRandom (consonantRated, 6 - randomVowsAndCons - consToKeep -vowsToKeep, consonantMultiple);
 
+		if (true) {
+			foreach (var ccc in lettersGenerated) {
+				Debug.Log (ccc);
+			}
+		}
 		//Fill empty values with vows
 		int lettersGeneratedCount = lettersGenerated.Count;
 		for (int i = 0; i < vowelSelected.Count; i++) {
@@ -353,16 +342,11 @@ public class GameManager : MonoBehaviour {
 		}
 		//vowelSelected.Sort();
 
-
-		Debug.Log ("lettersGenerated.Count");
-		Debug.Log (lettersGenerated.Count);
-
 		if (false) {
 			foreach (var ccc in lettersGenerated) {
 				Debug.Log (ccc);
 			}
 		}
-
 		return lettersGenerated;
 	}
 
