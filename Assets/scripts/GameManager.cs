@@ -119,11 +119,11 @@ public class GameManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		
+
 		for(char c = 'A'; c <= 'Z'; c++){
 			alpha.Add("" + c);
 		}
-		
+
 		//Init interface elements
 		buttons = new Button[]{b1, b2, b3, b4, b5, b6};
 		word.text = "";
@@ -138,7 +138,6 @@ public class GameManager : MonoBehaviour {
 
 		setCombinations ();
 
-
 		//Fil buttons with letters
 		fillLetters ();
 
@@ -151,7 +150,7 @@ public class GameManager : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		
+
 	}
 
 	public List<string> Shuffle(List<string> lArray, int[] keepPositions = null)  
@@ -161,11 +160,8 @@ public class GameManager : MonoBehaviour {
 
 
 		if (keepPositions != null) {
-			//Select the new letters
 
 			List<int> positionToKeep = new List<int> { 0, 1, 2, 3, 4, 5 };
-			//faire un nouveau tableau T (1 2 3 4 5 6)
-			//virer les valeurs présentes dans keepositions
 
 			for (int i = 0; i < keepPositions.Length - 1; i++) {
 				if (keepPositions [i] != 9) {
@@ -193,19 +189,7 @@ public class GameManager : MonoBehaviour {
 			lettersToShuffle[i] = value;
 		}
 
-		//Faire une fonction pour remplir les cases vides d'un tableau par un autre tableau fillEmpty(tableau avec vide, tableau pour copmleter)
-		int lettersGeneratedCount = lettersGenerated.Count;
-		for (int i = 0; i < lettersToShuffle.Count; i++) {
-			if (lettersGeneratedCount != 0) {
-				int j = 0;
-				while (lettersGenerated [j] != "") {
-					j++;
-				}
-				lettersGenerated [j] = lettersToShuffle [i];
-			} else {
-				lettersGenerated.Add (lettersToShuffle [i]);
-			}
-		}
+		lettersGenerated = mergeArray (lettersGenerated, lettersToShuffle);
 
 		return lettersGenerated;
 	}
@@ -263,7 +247,7 @@ public class GameManager : MonoBehaviour {
 		int vowsToKeep = 0, consToKeep = 0;
 
 		if (keepPositions != null) {
-			lettersGenerated = currentLetters.Select(item => (string)item.Clone()).ToList();
+			lettersGenerated = val(currentLetters);
 
 			//Remove the used letters
 			for (int i = 0; i < keepPositions.Length;i++){
@@ -282,11 +266,11 @@ public class GameManager : MonoBehaviour {
 				}
 			}
 			for (int i = 0; i < lettersGenerated.Count; i++) {
-				Debug.Log (lettersGenerated [i]);
+				log (lettersGenerated [i]);
 			}
 			consToKeep = consToKeep - vowsToKeep;
 		}
-		
+
 		List<string> vowelRated = new List<string>();
 		for (int i = 0; i < vowelRate.Length/2; i++) {
 			int rate = int.Parse(vowelRate[i, 1]);
@@ -307,53 +291,32 @@ public class GameManager : MonoBehaviour {
 		}
 		int randomVowsAndCons = Random.Range (minVows, 4 - vowsToKeep);
 
-		List<string> vowelSelected = getRandom (vowelRated, randomVowsAndCons, vowelMultiple);
-		List<string> consonantSelected = getRandom (consonantRated, 6 - randomVowsAndCons - consToKeep -vowsToKeep, consonantMultiple);
+		List<string> vowelSelected = getRandom (val(vowelRated), randomVowsAndCons, vowelMultiple, keepPosition);
+		List<string> consonantSelected = getRandom val(consonantRated), 6 - randomVowsAndCons - consToKeep -vowsToKeep, consonantMultiple, keepPosition);
 
-		if (true) {
-			foreach (var ccc in lettersGenerated) {
-				Debug.Log (ccc);
-			}
-		}
-		//Fill empty values with vows
-		int lettersGeneratedCount = lettersGenerated.Count;
-		for (int i = 0; i < vowelSelected.Count; i++) {
-			if (lettersGeneratedCount != 0) {
-				int j = 0;
-				while (lettersGenerated [j] != "") {
-					j++;
-				}
-				lettersGenerated [j] = vowelSelected [i];
-			} else {
-				lettersGenerated.Add (vowelSelected [i]);
-			}
-		}
-		//Fill empty values with cons
-		for (int i = 0; i < consonantSelected.Count; i++) {
-			if (lettersGeneratedCount != 0) {
-				int j = 0;
-				while (lettersGenerated [j] != "") {
-					j++;
-				}
-				lettersGenerated [j] = consonantSelected [i];
-			} else {
-				lettersGenerated.Add (consonantSelected [i]);
-			}
-		}
+		int letterGeneratedCount = lettersGenerated.Count;
+		lettersGenerated = mergeArray (lettersGenerated, vowelSelected, letterGeneratedCount);
+		lettersGenerated = mergeArray (lettersGenerated, consonantSelected, letterGeneratedCount);
+
 		//vowelSelected.Sort();
 
-		if (false) {
-			foreach (var ccc in lettersGenerated) {
-				Debug.Log (ccc);
-			}
-		}
 		return lettersGenerated;
 	}
 
 	// For a list of letter, return <number> of letters
-	public List<string> getRandom(List<string> lettersList, int number, string[ , ] letterMultiple){
+	public List<string> getRandom(List<string> lettersList, int number, string[ , ] letterMultiple, keepPosition = null){
 
 		List<string> lettersSelection = new List<string>();
+		if (keepPosition != null){
+			for(int i = 0; i < keepPosition.Count;i++){
+				if (keepPosition[i] != 9){
+					string letter = currentLetters[keepPosition[i]];
+					//-1 dans rated
+				}else{
+					return;
+				}
+			}
+		}
 
 		for (int i = 0; i < number; i++) {
 			int rand = Random.Range (0, lettersList.Count);
@@ -365,7 +328,7 @@ public class GameManager : MonoBehaviour {
 
 				if (letterIsMultiple (lettersList [rand], letterMultiple)) {
 					lettersSelection.Add (currentLetter);
-					//Debug.Log (currentLetter);
+					//log (currentLetter);
 				} else {
 					i--;
 				}
@@ -384,7 +347,7 @@ public class GameManager : MonoBehaviour {
 				//If called a first time
 				lettersSelection.Add (currentLetter);
 				lettersList.RemoveAt (rand);
-				//Debug.Log (currentLetter);
+				//log (currentLetter);
 			}
 		}
 
@@ -403,7 +366,7 @@ public class GameManager : MonoBehaviour {
 			}
 			i++;
 		}
-		Debug.Log("letterIsMultiple has not find the letter in the letterMultiple array");
+		log("letterIsMultiple has not find the letter in the letterMultiple array");
 		return false;
 	}
 
@@ -416,14 +379,14 @@ public class GameManager : MonoBehaviour {
 		reader = new  StreamReader(externalDictionaryFileName);
 		string line;
 		while (true) {
-			
+
 			line = reader.ReadLine ();
 
 			if (line==null) break;
 
 			line = line.Replace ("-", "");
 			line = line.Replace (".", "");
-			line = line.Replace ("Œ", "OE"); // marche pas ?
+			line = line.Replace ("Œ", "OE");
 			line = line.Replace (" ", "");
 
 
@@ -436,7 +399,7 @@ public class GameManager : MonoBehaviour {
 			}
 		}
 
-		Debug.Log (tempDictionary.Count);
+		log (tempDictionary.Count);
 		reader.Close();
 
 		File.Delete(internalDictionaryPath);
@@ -471,7 +434,7 @@ public class GameManager : MonoBehaviour {
 				dictionary.Add (line);
 			}
 		} else {
-			Debug.Log ("Aucun dictionnaire n'a été trouvé. Entrer un externalDictionaryFileName contenant le fichier externe, et affecter forceGeneration à True pour générer un nouveau fichier");
+			log ("Aucun dictionnaire n'a été trouvé. Entrer un externalDictionaryFileName contenant le fichier externe, et affecter forceGeneration à True pour générer un nouveau fichier");
 		}
 	}
 
@@ -498,7 +461,7 @@ public class GameManager : MonoBehaviour {
 			while (i < dictionary.Count && wordFound == false) {
 				if (currentWord == dictionary [i]) {
 					if (dev) {
-						Debug.Log ("GG !");
+						log ("GG !");
 					}
 					wordFound = true;
 
@@ -516,7 +479,7 @@ public class GameManager : MonoBehaviour {
 				i++;
 			}
 			if (wordFound == false && dev) {
-				Debug.Log ("Nope !");
+				log ("Nope !");
 			}
 		}
 	}
@@ -547,7 +510,7 @@ public class GameManager : MonoBehaviour {
 		for(int i = 0; i < combinationDictionaryLength; i++){
 			int wordLength = combinationDictionary[i].Length;
 			//Set a tempCombination to remove letters and handdle multiple letters
-			tempCombinationLetters = combinationLetters.Select(item => (string)item.Clone()).ToList();
+			tempCombinationLetters = val(combinationLetters);
 
 			//For all letters in the word
 			for (int j = 0; j < wordLength; j++) {
@@ -561,9 +524,9 @@ public class GameManager : MonoBehaviour {
 					//If last letter is ok, this word can be done
 					if(j == wordLength - 1){
 						if (dev) {
-							Debug.Log(tempCombinationLetters.Count);
+							log(tempCombinationLetters.Count);
 							for (int k = 0; k < wordLength; k++) {
-								Debug.Log (combinationDictionary[i][k]);
+								log (combinationDictionary[i][k]);
 							}
 						}
 						return true;
@@ -574,12 +537,50 @@ public class GameManager : MonoBehaviour {
 
 		return false;
 	}
-}
 
+	public List<string> mergeArray(List<string> arrayWithEmpties, List<string> arrayToComplete, int initialCount = -1){
+		arrayWithEmpties = val (arrayWithEmpties);
+		arrayToComplete = val (arrayToComplete);
+		int arrayWithEmptiesCount = initialCount != -1 ? initialCount : arrayWithEmpties.Count;
+		for (int i = 0; i < arrayToComplete.Count; i++) {
+			if (arrayWithEmptiesCount != 0) {
+				int j = 0;
+				while (arrayWithEmpties [j] != "") {
+					j++;
+				}
+				arrayWithEmpties [j] = arrayToComplete[i];
+			} else {
+				arrayWithEmpties.Add (arrayToComplete[i]);
+			}
+		}
+		log (arrayWithEmpties.Count);
+		return arrayWithEmpties;
+	}
+
+	//To clone the value and delete the ref
+	public List<string> val(List<string> arrayToClone){
+		return arrayToClone.Select(item => (string)item.Clone()).ToList();
+	}
+
+	public void log(string value){
+		Debug.Log (value);
+	}
+	public void log(int value){
+		Debug.Log (value.ToString());
+	}
+	public void log(char value){
+		Debug.Log (value);
+	}
+	public void log(List<string> value){
+		foreach (string c in value)
+		{
+			Debug.Log(c);
+		}
+	}
+}
 /*
- 	faire une fonction pour completer les valeurs vide dans un tableau avec les valeurs d'un autre
 	is multiple testé quand keepPosition != null ?
-	fix OE in dictionnary generated, tous les mots à accents vires ?
+	fix OE in dictionnary generated, tous les mots à accents vires ? (testé pour oe, voir dans fichié généré)
 	bouton refresh : avoir au moins 3 lettres différentes en sortie (donc stocker ancienne)
 	supprimer mot du dictionnaire (pas du fichier, du dico généré) pour pas pouvoir le refaire et régénerer combinationDictionnary (lourd, optimisale ?)
 	
